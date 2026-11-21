@@ -32,6 +32,7 @@ jobs:
           SECRANDOM_INTEGRATION_SIGNING_PRIVATE_KEY_PKCS8_BASE64: ${{ secrets.SECRANDOM_INTEGRATION_SIGNING_PRIVATE_KEY_PKCS8_BASE64 }}
         run: |
           mkdir -p artifacts
+          dotnet build tools/SecRandom.Integration.Signing/SecRandom.Integration.Signing.csproj -c Release --no-restore
           dotnet run --project tools/SecRandom.Integration.Signing/SecRandom.Integration.Signing.csproj -c Release --no-build -- \
             src/SecRandom.Integration.Client/bin/Release/net8.0/SecRandom.Integration.Client.dll \
             artifacts/SecRandom.Integration.Client.official-proof.json
