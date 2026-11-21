@@ -1,0 +1,18 @@
+<Project>
+  <PropertyGroup>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RepositoryUrl>https://github.com/SECTL/SecRandom-Integration-SDK</RepositoryUrl>
+    <PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
+    <Authors>SECTL</Authors>
+    <Company>SECTL</Company>
+    <IntegrationPublicKey Condition="'$(IntegrationPublicKey)' == ''">$(SECRANDOM_INTEGRATION_PUBLIC_KEY_SPKI_BASE64)</IntegrationPublicKey>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(IntegrationPublicKey)' != ''">
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>SecRandomIntegrationPublicKey</_Parameter1>
+      <_Parameter2>$(IntegrationPublicKey)</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+</Project>
+

@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <PackageId>SecRandom.Integration.Abstractions</PackageId>
+    <Version>1.0.0</Version>
+    <Description>Stable protocol and data contracts for SecRandom integrations.</Description>
+  </PropertyGroup>
+</Project>
+

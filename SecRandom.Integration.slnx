@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/SecRandom.DrawKit/SecRandom.DrawKit.csproj" />
+    <Project Path="src/SecRandom.Integration.Abstractions/SecRandom.Integration.Abstractions.csproj" />
+    <Project Path="src/SecRandom.Integration.Client/SecRandom.Integration.Client.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/SecRandom.Integration.Tests/SecRandom.Integration.Tests.csproj" />
+  </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/SecRandom.Integration.Signing/SecRandom.Integration.Signing.csproj" />
+  </Folder>
+</Solution>

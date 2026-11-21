@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <PackageId>SecRandom.DrawKit</PackageId>
+    <Version>1.0.0</Version>
+    <Description>UI-free SecRandom roster, history, random and fair draw primitives.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SecRandom.Integration.Abstractions\SecRandom.Integration.Abstractions.csproj" />
+  </ItemGroup>
+</Project>
+
