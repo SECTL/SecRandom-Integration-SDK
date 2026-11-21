@@ -8,11 +8,15 @@
 
 [![GitHub Issues](https://img.shields.io/github/issues-search/SECTL/SecRandom-Integration-SDK?query=is%3Aopen&style=for-the-badge&color=00b4ab&logo=github&label=问题)](https://github.com/SECTL/SecRandom-Integration-SDK/issues)
 [![最新版本](https://img.shields.io/github/v/release/SECTL/SecRandom-Integration-SDK?style=for-the-badge&color=00b4ab&label=最新正式版)](https://github.com/SECTL/SecRandom-Integration-SDK/releases/latest)
+[![测试版本](https://img.shields.io/github/v/release/SECTL/SecRandom-Integration-SDK?include_prereleases&style=for-the-badge&label=测试版)](https://github.com/SECTL/SecRandom-Integration-SDK/releases)
 [![最后更新](https://img.shields.io/github/last-commit/SECTL/SecRandom-Integration-SDK?style=for-the-badge&color=00b4ab&label=最后更新时间)](https://github.com/SECTL/SecRandom-Integration-SDK/commits/main)
+[![累计下载](https://img.shields.io/github/downloads/SECTL/SecRandom-Integration-SDK/total?style=for-the-badge&color=00b4ab&label=累计下载)](https://github.com/SECTL/SecRandom-Integration-SDK/releases)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg?style=for-the-badge)](LICENSE)
 
 [![QQ群](https://img.shields.io/badge/-QQ%E7%BE%A4%20%7C%20833875216-blue?style=for-the-badge&logo=QQ)](https://qm.qq.com/q/iWcfaPHn7W)
 [![Bilibili](https://img.shields.io/badge/-Bilibili%20%7C%20%E9%BB%8E%E6%B3%BD%E6%87%BF-%23FB7299?style=for-the-badge&logo=bilibili)](https://space.bilibili.com/520571577)
+
+**语言** [ **简体中文** ]
 
 </div>
 
@@ -46,7 +50,13 @@ SecRandom 集成 SDK 面向希望在自己的 .NET 应用中使用名单和抽�
 | `SecRandom.Integration.Client` | 本地发现、通知接收与浮窗联动 IPC |
 | `SecRandom.DrawKit` | 名单和历史存储、随机与公平抽取 |
 
-## 下载与使用
+## 技术演进
+
+| 版本 | 技术栈 | 阶段 |
+| --- | --- | --- |
+| **v1** | **C# + .NET 8** | 首个公开 SDK，提供名单、历史、随机/公平抽取与本地 IPC 联动 |
+
+## 下载与更新
 
 从 [GitHub Releases](https://github.com/SECTL/SecRandom-Integration-SDK/releases) 下载发行包并解压，包内包含三个 `.nupkg` 和与官方客户端程序集对应的 `SecRandom.Integration.Client.official-proof.json`。将解压目录作为本地 NuGet 源，按需添加 `SecRandom.DrawKit` 或 `SecRandom.Integration.Client`；其依赖的 `SecRandom.Integration.Abstractions` 也需要保留在该源中
 
@@ -119,7 +129,7 @@ await receiver.StartAsync();
 dotnet test SecRandom.Integration.slnx -c Release
 ```
 
-SDK 主分支的受信任构建会生成 NuGet 包和官方 proof，作为 Actions 构建产物。发布包从 [GitHub Releases](https://github.com/SECTL/SecRandom-Integration-SDK/releases) 下载
+SDK 主分支的受信任构建会生成 NuGet 包和官方 proof，作为 Actions 构建产物。发布包从 [GitHub Releases](https://github.com/SECTL/SecRandom-Integration-SDK/releases) 下载；使用 SDK 时请优先选择带有官方 proof 的同版本发行包
 
 ## 许可证与第三方声明
 
@@ -141,5 +151,15 @@ SDK 主分支的受信任构建会生成 NuGet 包和官方 proof，作为 Actio
 - [SecRandom 官方文档](https://secrandom.sectl.cn/doc/overview.html)
 - [QQ群 833875216](https://qm.qq.com/q/iWcfaPHn7W)
 - [Bilibili 主页](https://space.bilibili.com/520571577)
+
+## Star History
+
+<a href="https://www.star-history.com/?repos=SECTL%2FSecRandom-Integration-SDK&type=date&legend=top-left">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=SECTL/SecRandom-Integration-SDK&type=date&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=SECTL/SecRandom-Integration-SDK&type=date&legend=top-left" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=SECTL/SecRandom-Integration-SDK&type=date&legend=top-left" />
+ </picture>
+</a>
 
 **Copyright © 2025-2026 SECTL**
