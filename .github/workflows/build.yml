@@ -3,6 +3,7 @@ name: Build SDK
 on:
   push:
     branches: [main]
+    tags: ["v*"]
   pull_request:
   workflow_dispatch:
 
@@ -33,7 +34,7 @@ jobs:
           dotnet pack src/SecRandom.DrawKit/SecRandom.DrawKit.csproj -c Release --no-build -o artifacts/packages
           dotnet pack src/SecRandom.Integration.Client/SecRandom.Integration.Client.csproj -c Release --no-build -o artifacts/packages
       - name: Sign the official SDK assembly
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
         env:
           SECRANDOM_INTEGRATION_SIGNING_PRIVATE_KEY_PKCS8_BASE64: ${{ secrets.SECRANDOM_INTEGRATION_SIGNING_PRIVATE_KEY_PKCS8_BASE64 }}
         run: |
@@ -47,10 +48,28 @@ jobs:
           cp -r bindings docs/automation-v2.md artifacts/release-package/
           (cd artifacts/release-package && zip -r ../SecRandom-Integration-SDK-v1.1.0.zip .)
       - uses: actions/upload-artifact@v4
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
         with:
           name: SecRandom-Integration-SDK-v1.1.0
           path: artifacts/SecRandom-Integration-SDK-v1.1.0.zip
           if-no-files-found: error
+
+  publish:
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: SecRandom-Integration-SDK-v1.1.0
+          path: artifacts
+      - uses: softprops/action-gh-release@v2
+        with:
+          name: SecRandom 集成 SDK v1.1.0
+          body_path: CHANGELOG.md
+          files: artifacts/SecRandom-Integration-SDK-v1.1.0.zip
 
 
