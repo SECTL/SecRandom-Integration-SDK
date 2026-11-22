@@ -25,7 +25,7 @@
 
 ## SecRandom 集成 SDK
 
-SecRandom 集成 SDK 面向希望在自己的 .NET 应用中使用名单和抽取能力，或通过本地 IPC 接收 [SecRandom](https://github.com/SECTL/SecRandom) 抽取结果的开发者。本仓库提供面向 .NET 8 的程序集，使用 .NET 10 SDK 构建和测试
+SecRandom 集成 SDK 面向希望在自己的应用中使用名单和抽取能力，或通过本地 IPC 控制并接收 [SecRandom](https://github.com/SECTL/SecRandom) 抽取结果的开发者。协议核心保持语言无关；C# 程序集继续面向 .NET 8，另提供 C++、Python 和 Rust 的薄适配层，使用 .NET 10 SDK 构建和测试
 
 ## SDK 功能
 
@@ -42,6 +42,14 @@ SecRandom 集成 SDK 面向希望在自己的 .NET 应用中使用名单和抽�
 - 在 SecRandom 中经用户批准后保存通知渠道；可申请浮窗联动租约，退出或释放租约后恢复浮窗
 - SecRandom 的渠道管理扩展正在 [PR #358](https://github.com/SECTL/SecRandom/pull/358) 中，包括别名、结果发送与浮窗联动开关、在线状态和删除
 
+### 多语言自动化
+
+- 通过同一套 v2 本地 IPC 发送 `点名`、`闪抽`、`抽奖` 指令，支持可选名单、人数、性别和分组
+- 可选在抽取前打开主页面；默认不改变窗口状态
+- 可以通过 IPC 读取名单/奖池、名单成员、性别和小组选项，由接入方自己的 UI 让用户选择
+- 未提供的参数不会被 SDK 补齐，SecRandom 会继续使用软件当前设置，因此 SDK 不会固定随机/公平模式或人数
+- C# 复用 `SecRandom.Integration.Client`；C++、Python、Rust 适配器位于 [`bindings/`](bindings/)，协议说明见 [`docs/automation-v2.md`](docs/automation-v2.md)
+
 ### 组件
 
 | 包 | 用途 |
@@ -50,23 +58,48 @@ SecRandom 集成 SDK 面向希望在自己的 .NET 应用中使用名单和抽�
 | `SecRandom.Integration.Client` | 本地发现、通知接收与浮窗联动 IPC |
 | `SecRandom.DrawKit` | 名单和历史存储、随机与公平抽取 |
 
+| 语言适配器 | 用途 |
+| --- | --- |
+| `bindings/cpp` | C++17 头文件，返回原始 JSON 响应 |
+| `bindings/python` | Python 3.10+、标准库实现 |
+| `bindings/rust/secrandom-integration` | 同步 Rust crate |
+
 ## 技术演进
 
 | 版本 | 技术栈 | 阶段 |
 | --- | --- | --- |
 | **v1** | **C# + .NET 8** | 首个公开 SDK，提供名单、历史、随机/公平抽取与本地 IPC 联动 |
+| **v2** | **C# / C++ / Python / Rust** | 共享 JSON IPC 契约；各语言只负责传输和参数适配，抽取策略继续由 SecRandom 管理 |
 
 ## 下载与更新
 
-从 [GitHub Releases](https://github.com/SECTL/SecRandom-Integration-SDK/releases) 下载发行包并解压，包内包含三个 `.nupkg` 和与官方客户端程序集对应的 `SecRandom.Integration.Client.official-proof.json`。将解压目录作为本地 NuGet 源，按需添加 `SecRandom.DrawKit` 或 `SecRandom.Integration.Client`；其依赖的 `SecRandom.Integration.Abstractions` 也需要保留在该源中
+从 [GitHub Releases](https://github.com/SECTL/SecRandom-Integration-SDK/releases) 下载发行包并解压，包内包含三个 `.nupkg`、官方 proof，以及 `bindings/` 下的 C++、Python、Rust 适配器。将解压目录作为本地 NuGet 源，按需添加 `SecRandom.DrawKit` 或 `SecRandom.Integration.Client`；其依赖的 `SecRandom.Integration.Abstractions` 也需要保留在该源中
 
 例如，解压到 `D:\packages\secrandom` 后，在目标项目目录执行：
 
 ```powershell
 dotnet nuget add source D:\packages\secrandom --name SecRandomLocal
-dotnet add package SecRandom.DrawKit --version 1.0.0
-dotnet add package SecRandom.Integration.Client --version 1.0.0
+dotnet add package SecRandom.DrawKit --version 1.1.0
+dotnet add package SecRandom.Integration.Client --version 1.1.0
 ```
+
+### 通过软件默认设置抽取
+
+```csharp
+using SecRandom.Integration;
+using SecRandom.Integration.Client;
+
+var client = new AutomationClient();
+var result = await client.DrawAsync(
+    DrawChannel.RollCall,
+    new DrawOptions(List: "一班", OpenMainWindow: true));
+```
+
+`List`、`Count`、`Gender` 和 `Group` 都是可选的一次性覆盖；全部省略时，抽取名单、人数、随机/公平/编排模式和其他策略均由 SecRandom 当前设置决定。`OpenMainWindow` 默认关闭，不会因为 SDK 调用而改变窗口状态。需要修改软件的默认名单时才调用 `ActivateRosterAsync`。
+
+用户选择所需的数据可以通过 `GetRosterListsAsync`、`ReadRosterAsync` 和
+`GetRosterSelectionOptionsAsync` 获取；这些方法只读本体，不会切换默认名单。Python、Rust
+和 C++ 适配器分别提供 `roster_lists` / `read_roster`，返回同一份 IPC JSON 数据。
 
 ### 本地抽取示例
 
@@ -97,7 +130,7 @@ using SecRandom.Integration.Client;
 await using var receiver = new NotificationReceiver(new NotificationReceiverOptions(
     AppId: "example.classroom.app",
     DisplayName: "课堂应用",
-    SdkVersion: "1.0.0.0",
+    SdkVersion: "1.1.0.0",
     PublisherProofPath: "SecRandom.Integration.Client.official-proof.json"));
 
 receiver.NotificationReceived += (result, cancellationToken) =>

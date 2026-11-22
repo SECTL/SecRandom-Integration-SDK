@@ -20,6 +20,12 @@ jobs:
         with:
           dotnet-version: 10.0.x
       - run: dotnet test SecRandom.Integration.slnx -c Release --nologo
+      - name: Test Python adapter
+        run: python3 -m unittest discover -s bindings/python/tests -v
+      - name: Test Rust adapter
+        run: cargo test --manifest-path bindings/rust/secrandom-integration/Cargo.toml
+      - name: Compile C++ adapter
+        run: g++ -std=c++17 -Wall -Wextra -Werror -I bindings/cpp/include bindings/cpp/tests/compile.cpp -o /tmp/secrandom-integration-cpp-smoke
       - name: Pack SDK packages
         run: |
           mkdir -p artifacts/packages
@@ -36,12 +42,15 @@ jobs:
           dotnet run --project tools/SecRandom.Integration.Signing/SecRandom.Integration.Signing.csproj -c Release --no-build -- \
             src/SecRandom.Integration.Client/bin/Release/net8.0/SecRandom.Integration.Client.dll \
             artifacts/SecRandom.Integration.Client.official-proof.json
-          zip -j artifacts/SecRandom-Integration-SDK-v1.0.0.zip artifacts/packages/*.nupkg artifacts/SecRandom.Integration.Client.official-proof.json
+          mkdir -p artifacts/release-package
+          cp artifacts/packages/*.nupkg artifacts/SecRandom.Integration.Client.official-proof.json artifacts/release-package/
+          cp -r bindings docs/automation-v2.md artifacts/release-package/
+          (cd artifacts/release-package && zip -r ../SecRandom-Integration-SDK-v1.1.0.zip .)
       - uses: actions/upload-artifact@v4
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
-          name: SecRandom-Integration-SDK-v1.0.0
-          path: artifacts/SecRandom-Integration-SDK-v1.0.0.zip
+          name: SecRandom-Integration-SDK-v1.1.0
+          path: artifacts/SecRandom-Integration-SDK-v1.1.0.zip
           if-no-files-found: error
 
 

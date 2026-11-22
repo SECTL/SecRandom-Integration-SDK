@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 3.16)
+project(secrandom_integration LANGUAGES CXX)
+
+add_library(secrandom_integration INTERFACE)
+target_compile_features(secrandom_integration INTERFACE cxx_std_17)
+target_include_directories(secrandom_integration INTERFACE include)

@@ -2,7 +2,7 @@
 
 v1 协议仅限本地使用。各实现使用当前用户的 IPC 端点与包含官方 proof 的发现清单。ECDSA P-256 签名涵盖 SDK 包 ID、程序集版本以及 SDK 客户端程序集的 SHA-256 哈希值；清单中的应用 ID 和显示名由接入应用提供，不属于签名范围。宿主检查所通告的进程是否已加载具有该哈希值的程序集，通信时核对 IPC 对端进程。在这些检查通过且用户批准该通知通道之前，清单均不可信。批准结果由 SecRandom 宿主持久化保存。官方 proof 证明客户端程序集来源，不证明使用它的第三方应用是官方应用。
 
-SDK 抽取 API 仅公开 `random` 和 `fair`；它有意不包含编排模式。通知接收器接受 `notification.result`。宿主集成还保留了 `linkage.acquire` 和 `linkage.release`，用于浮动窗口抑制租约。除当前操作系统账户外，不暴露任何端点。
+v1 的本地 `DrawKit` 抽取 API 仅公开 `random` 和 `fair`；它有意不包含编排模式。v2 自动化 IPC 由 SecRandom 本体决定抽取通道和当前设置，见 [automation-v2](automation-v2.md)，因此语言适配器不会复制这套抽取逻辑。通知接收器接受 `notification.result`。宿主集成还保留了 `linkage.acquire` 和 `linkage.release`，用于浮动窗口抑制租约。除当前操作系统账户外，不暴露任何端点。
 
 ## 宿主中的通知渠道管理
 
