@@ -2,9 +2,6 @@
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <PackageId>SecRandom.Integration.Client</PackageId>
-    <Version>1.1.0</Version>
-    <AssemblyVersion>1.1.0.0</AssemblyVersion>
-    <FileVersion>1.1.0.0</FileVersion>
     <Description>Local IPC discovery, signed manifests, automation commands and notification delivery for SecRandom.</Description>
   </PropertyGroup>
   <ItemGroup>

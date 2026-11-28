@@ -6,6 +6,7 @@
     <PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
     <Authors>SECTL</Authors>
     <Company>SECTL</Company>
+    <Version>1.2.0</Version>
     <IntegrationPublicKey Condition="'$(IntegrationPublicKey)' == ''">$(SECRANDOM_INTEGRATION_PUBLIC_KEY_SPKI_BASE64)</IntegrationPublicKey>
   </PropertyGroup>
   <ItemGroup Condition="'$(IntegrationPublicKey)' != ''">

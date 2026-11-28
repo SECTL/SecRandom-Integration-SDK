@@ -16,6 +16,12 @@ public enum DrawMode
     Fair = 1
 }
 
+public enum FairDrawStrategy
+{
+    UniformFirst = 0,
+    RandomFirst = 1
+}
+
 public enum RosterKind
 {
     Students = 0,
@@ -42,14 +48,22 @@ public sealed record HistoryEntry(
     [property: JsonPropertyName("member_ids")] IReadOnlyList<string> MemberIds,
     [property: JsonPropertyName("draw_mode")] DrawMode DrawMode,
     [property: JsonPropertyName("at")] DateTimeOffset At,
-    [property: JsonPropertyName("source_app_id")] string? SourceAppId = null);
+    [property: JsonPropertyName("source_app_id")] string? SourceAppId = null)
+{
+    [JsonPropertyName("fair_strategy")]
+    public FairDrawStrategy? FairStrategy { get; init; }
+}
 
 public sealed record DrawRequest(
     [property: JsonPropertyName("roster_id")] string RosterId,
     [property: JsonPropertyName("count")] int Count,
     [property: JsonPropertyName("mode")] DrawMode Mode,
     [property: JsonPropertyName("gender")] string? Gender = null,
-    [property: JsonPropertyName("group")] string? Group = null);
+    [property: JsonPropertyName("group")] string? Group = null)
+{
+    [JsonPropertyName("fair_strategy")]
+    public FairDrawStrategy FairStrategy { get; init; } = FairDrawStrategy.UniformFirst;
+}
 
 public sealed record DrawResult(
     [property: JsonPropertyName("round_id")] string RoundId,

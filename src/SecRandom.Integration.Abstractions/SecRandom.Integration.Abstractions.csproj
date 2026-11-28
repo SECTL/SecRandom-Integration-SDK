@@ -2,7 +2,6 @@
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <PackageId>SecRandom.Integration.Abstractions</PackageId>
-    <Version>1.1.0</Version>
     <Description>Stable protocol, automation and data contracts for SecRandom integrations.</Description>
   </PropertyGroup>
 </Project>

@@ -2,11 +2,11 @@
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <PackageId>SecRandom.DrawKit</PackageId>
-    <Version>1.1.0</Version>
     <Description>UI-free SecRandom roster, history, random and fair draw primitives.</Description>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\SecRandom.Integration.Abstractions\SecRandom.Integration.Abstractions.csproj" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.12" />
   </ItemGroup>
 </Project>
 

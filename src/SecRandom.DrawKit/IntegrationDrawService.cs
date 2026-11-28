@@ -11,7 +11,8 @@ public sealed class IntegrationDrawService(JsonRosterStore rosters, JsonHistoryS
         var priorHistory = history.Read();
         var result = engine.Draw(roster, priorHistory, request, sourceAppId);
         var saved = history.Append(new HistoryEntry(result.RoundId, result.RosterId,
-            result.Members.Select(member => member.Id).ToArray(), result.Mode ?? DrawMode.Random, result.At, sourceAppId));
+            result.Members.Select(member => member.Id).ToArray(), result.Mode ?? DrawMode.Random, result.At, sourceAppId)
+            { FairStrategy = request.Mode == DrawMode.Fair ? request.FairStrategy : null });
         if (!saved)
             throw new InvalidOperationException("The draw round was already committed.");
         return result;
