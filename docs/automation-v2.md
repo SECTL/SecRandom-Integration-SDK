@@ -4,6 +4,10 @@ The language bindings in this repository are adapters for the same local v2 prot
 not contain another draw engine. SecRandom remains responsible for the active roster, draw mode,
 fairness policy, history, security verification, animations, and result presentation.
 
+Integration requires desktop SecRandom 3.2.0 or later. The independent C# DrawKit does not
+require SecRandom. Some corrections, including sparse draw overrides and the event switch, require
+a SecRandom build containing the corresponding fixes after 3.2.0.
+
 ## Transport
 
 Each request uses a current-user local pipe and one UTF-8 JSON line. The server returns one JSON
@@ -45,6 +49,11 @@ count by default. This keeps new settings and future draw modes owned by SecRand
 
 `gender` and `group` apply to roll call. SecRandom rejects them for lottery because lottery uses
 prize-pool conditions instead. Quick draw keeps its fixed one-result behavior.
+
+C# 1.2 also accepts `new DrawOptions { Conditions = new LotteryDrawConditions(...) }` for lottery
+prize tags and recipient filters. Recipient gender or group requires `StudentList`. Sparse draw
+overrides require a SecRandom build containing the IPC draw parameter normalization fix; older
+builds may reject them as invalid.
 
 `open_main_window` is also opt-in. When it is true, the adapter sends `window.show` immediately
 before the draw. When it is false, it leaves the current windows unchanged; it never hides a
@@ -90,9 +99,46 @@ The other bindings decode the response envelope and raise/return a typed protoco
 bindings expose a generic `call` operation for methods added later without changing the adapter
 core.
 
+The C# 1.2 development client also exposes convenience methods for system and state queries,
+windows, settings, roster writes, draw configuration and control, results, and history. Settings
+writes use `SetSettingsAsync` with a dictionary of schema paths; `WriteRosterAsync` accepts
+`RosterKind`, a list name, members, and `RosterWriteMode`. `Replace` overwrites the target roster;
+use `Merge` to merge records. Stable state methods return typed results; other server-defined
+payloads are returned as `JsonElement`.
+
+```csharp
+await client.SetWindowAsync(AutomationWindow.Floating, WindowAction.Show);
+await client.WriteRosterAsync(RosterKind.Students, "Class A",
+    new object[] { new { id = "1", name = "Alice" } }, RosterWriteMode.Merge);
+```
+
+`draw.await` waits for the current draw and returns the latest result. History queries currently
+accept `kind` and `name`, not pagination or date filters. Roster reads can truncate members; inspect
+each list's `truncated` field.
+
+## Event stream
+
+C# 1.2 development exposes the separate long-lived event pipe as an async stream:
+
+```csharp
+var events = new AutomationEvents();
+await foreach (var item in events.SubscribeAsync(new[] { "draw.completed" }, cancellationToken))
+    Console.WriteLine($"{item.Sequence}: {item.Name} {item.Data}");
+```
+
+Disposal or cancellation closes the pipe. The stream does not reconnect automatically, and the
+server does not replay missed events. Current events primarily report automation commands, not
+every UI operation. SecRandom builds containing the event-gate fix reject and close subscriptions
+when automation IPC is disabled; older builds leave the event pipe enabled independently of that
+setting. This stream is separate from the signed, user-approved `NotificationReceiver` channel.
+
 ## Compatibility
 
 The pipe name and method names are part of the v2 contract. Clients should call
 `system.capabilities` when they need to probe an older/newer SecRandom build. A missing method,
 disabled IPC, a local verification prompt, or a busy draw is a normal protocol error and should
 be surfaced to the caller instead of retried blindly.
+
+For a legacy v1 route without a v2 equivalent, C# 1.2 development offers
+`CallLegacyAsync("data/roll_call_list?name=...")`. It returns the complete v1 JSON envelope;
+check both `success` and `result.status`, since a business error can have `success: true`.

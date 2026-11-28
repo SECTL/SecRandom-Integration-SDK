@@ -34,13 +34,14 @@ SecRandom 集成 SDK 面向希望在自己的应用中使用名单和抽取能�
 - 使用稳定 ID 管理学生名单、奖品名单及成员信息
 - 将名单和历史记录保存为本地 JSON，并通过历史记录参与公平抽取
 - 支持随机抽取与公平抽取；公平模式按成员权重和历史抽中次数计算权重
+- 公平抽取支持均匀优先和随机优先；独立模式提供 SQLite 名单、成员、历史管理和快照导入导出
 - 抽取支持性别、分组筛选和单轮不重复；本 SDK 暂不包含编排抽取
 
 ### 本地联动
 
+- 需要桌面版 SecRandom **3.2.0 或更高版本**；独立抽取不需要安装 SecRandom
 - 通过本机当前用户的 IPC 发现接收端，并接收 SecRandom 的抽取结果
 - 在 SecRandom 中经用户批准后保存通知渠道；可申请浮窗联动租约，退出或释放租约后恢复浮窗
-- SecRandom 的渠道管理扩展正在 [PR #358](https://github.com/SECTL/SecRandom/pull/358) 中，包括别名、结果发送与浮窗联动开关、在线状态和删除
 
 ### 多语言自动化
 
@@ -72,6 +73,8 @@ SecRandom 集成 SDK 面向希望在自己的应用中使用名单和抽取能�
 | **v2** | **C# / C++ / Python / Rust** | 共享 JSON IPC 契约；各语言只负责传输和参数适配，抽取策略继续由 SecRandom 管理 |
 
 ## 下载与更新
+
+完整的安装、调用、事件和常见问题请参阅 [集成 SDK 文档](https://secrandom.sectl.cn/dev/integration/)。当前源码中的 1.2 便捷 API 尚未随 1.1.0 发行包提供；使用前请确认相应版本已经发布。
 
 从 [GitHub Releases](https://github.com/SECTL/SecRandom-Integration-SDK/releases) 下载发行包并解压，包内包含三个 `.nupkg`、官方 proof，以及 `bindings/` 下的 C++、Python、Rust 适配器。将解压目录作为本地 NuGet 源，按需添加 `SecRandom.DrawKit` 或 `SecRandom.Integration.Client`；其依赖的 `SecRandom.Integration.Abstractions` 也需要保留在该源中
 
@@ -122,6 +125,19 @@ Console.WriteLine(result.Members[0].Name);
 
 `IntegrationDrawService.Draw` 在成功抽取后写入历史。SDK 的名单和历史存储由接入应用管理，不会自动读取或修改 SecRandom 本体的数据
 
+1.2 开发版提供事务式本地数据库：
+
+```csharp
+var local = new LocalDrawStore("data/draw.sqlite");
+local.SaveRoster(new Roster("class-a", "一班", RosterKind.Students,
+    [new RosterMember("student-1", "小明"), new RosterMember("student-2", "小红")]));
+var result = local.Draw(new DrawRequest("class-a", 1, DrawMode.Fair)
+    { FairStrategy = FairDrawStrategy.RandomFirst });
+var history = local.QueryHistory(new HistoryQuery(RosterId: "class-a"));
+```
+
+`LocalDrawStore` 的名单、抽取及历史写入使用 SQLite 事务，多实例共享同一数据库；删除名单默认保留历史。依赖 `Microsoft.Data.Sqlite`，NuGet 还原时需要可用的 nuget.org 或镜像源。独立抽取的两种公平策略采用 SDK 文档中定义的规则，不代表完整复现本体全部公平配置、证明或编排功能。
+
 ### 接收本体结果
 
 ```csharp
@@ -143,7 +159,7 @@ await receiver.StartAsync();
 // 保持接收器及应用进程运行；退出时释放 receiver
 ```
 
-将官方 proof 文件部署到示例中的路径，`SdkVersion` 须与 proof 中的程序集版本一致。SecRandom 检测到接收器后会请求用户批准；本体集成功能合并并发布后才能在正式版中使用。更多协议细节见 [集成协议 v1](docs/integration-v1.md)
+将官方 proof 文件部署到示例中的路径，`SdkVersion` 须与 proof 中的程序集版本一致。SecRandom 检测到接收器后会请求用户批准；具体可用性取决于运行中的 SecRandom 版本。更多协议细节见 [集成协议 v1](docs/integration-v1.md)
 
 ## 验证边界
 
