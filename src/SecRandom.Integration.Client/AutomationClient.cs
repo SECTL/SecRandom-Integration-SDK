@@ -9,7 +9,7 @@ namespace SecRandom.Integration.Client;
 /// Thin client for SecRandom's v2 automation pipe. It sends intent only; omitted draw options
 /// stay under the control of SecRandom's current configuration.
 /// </summary>
-public sealed class AutomationClient
+public sealed partial class AutomationClient
 {
     private static readonly UTF8Encoding StrictUtf8 = new(false, true);
     private readonly string _pipeName;
@@ -96,6 +96,8 @@ public sealed class AutomationClient
 
         var response = JsonSerializer.Deserialize<AutomationResponse>(responseLine, AutomationJson.Options)
                        ?? throw new InvalidDataException("The automation response was invalid.");
+        if (response.Version != AutomationProtocol.Version || response.Type != "rpc" || response.Id != request.Id)
+            throw new InvalidDataException("The automation response does not match the request.");
         if (!response.Ok)
             throw new AutomationException(response.Error ?? new AutomationError(
                 "invalid_response", "SecRandom returned an unsuccessful response without an error."));
@@ -108,6 +110,8 @@ public sealed class AutomationClient
         CancellationToken cancellationToken = default)
     {
         options ??= new DrawOptions();
+        if (channel == DrawChannel.Quick && options.HasDrawOverrides)
+            throw new ArgumentException("Quick draw uses SecRandom's current settings and does not support overrides.", nameof(options));
         if (options.OpenMainWindow)
         {
             await CallAsync("window.show", new { target = "main", page = channel.MainPage() }, cancellationToken)

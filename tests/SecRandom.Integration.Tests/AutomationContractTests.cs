@@ -34,6 +34,18 @@ public sealed class AutomationContractTests
     }
 
     [Fact]
+    public void DrawOptions_SerializesLotteryConditionsUsingWireNames()
+    {
+        var options = new DrawOptions { Conditions = new LotteryDrawConditions(["gold"], "Class A", Group: "1") };
+        var parameters = JsonSerializer.SerializeToElement(options.ToParameters(), AutomationJson.Options);
+        var conditions = parameters.GetProperty("conditions");
+        Assert.Equal("gold", conditions.GetProperty("prize_tags")[0].GetString());
+        Assert.Equal("Class A", conditions.GetProperty("student_list").GetString());
+        Assert.Equal("1", conditions.GetProperty("group").GetString());
+        Assert.False(conditions.TryGetProperty("gender", out _));
+    }
+
+    [Fact]
     public void RosterRead_ExtractsDistinctSelectionOptions()
     {
         var snapshot = new RosterReadSnapshot("students", [

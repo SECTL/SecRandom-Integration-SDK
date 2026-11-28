@@ -33,12 +33,20 @@ public sealed record DrawOptions(
     string? Group = null,
     bool OpenMainWindow = false)
 {
-    public bool HasDrawOverrides => List is not null || Count is not null || Gender is not null || Group is not null;
+    public LotteryDrawConditions? Conditions { get; init; }
+
+    public bool HasDrawOverrides => List is not null || Count is not null || Gender is not null || Group is not null || Conditions is not null;
 
     public object? ToParameters() => HasDrawOverrides
-        ? new { list = List, count = Count, gender = Gender, group = Group }
+        ? new { list = List, count = Count, gender = Gender, group = Group, conditions = Conditions }
         : null;
 }
+
+public sealed record LotteryDrawConditions(
+    [property: JsonPropertyName("prize_tags")] IReadOnlyList<string>? PrizeTags = null,
+    [property: JsonPropertyName("student_list")] string? StudentList = null,
+    [property: JsonPropertyName("gender")] string? Gender = null,
+    [property: JsonPropertyName("group")] string? Group = null);
 
 public sealed record RosterListsSnapshot(
     [property: JsonPropertyName("students")] IReadOnlyList<string> Students,
