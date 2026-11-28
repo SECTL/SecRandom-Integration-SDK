@@ -32,7 +32,7 @@ SecRandom 集成 SDK 面向希望在自己的应用中使用名单和抽取能�
 ### 名单与抽取
 
 - 使用稳定 ID 管理学生名单、奖品名单及成员信息
-- 将名单和历史记录保存为本地 JSON，并通过历史记录参与公平抽取
+- 将名单和历史记录保存为本地 JSON 或 SQLite，并通过历史记录参与公平抽取
 - 支持随机抽取与公平抽取；公平模式按成员权重和历史抽中次数计算权重
 - 公平抽取支持均匀优先和随机优先；独立模式提供 SQLite 名单、成员、历史管理和快照导入导出
 - 抽取支持性别、分组筛选和单轮不重复；本 SDK 暂不包含编排抽取
@@ -159,7 +159,7 @@ await receiver.StartAsync();
 // 保持接收器及应用进程运行；退出时释放 receiver
 ```
 
-将官方 proof 文件部署到示例中的路径，`SdkVersion` 须与 proof 中的程序集版本一致。SecRandom 检测到接收器后会请求用户批准；具体可用性取决于运行中的 SecRandom 版本。更多协议细节见 [集成协议 v1](docs/integration-v1.md)
+将官方 proof 文件部署到示例中的路径，`SdkVersion` 须与 proof 中的程序集版本一致。1.2 官方客户端包会将 proof 复制到应用输出目录，可使用 `Path.Combine(AppContext.BaseDirectory, "SecRandom.Integration.Client.official-proof.json")` 指定路径。SecRandom 检测到接收器后会请求用户批准；具体可用性取决于运行中的 SecRandom 版本。更多协议细节见 [集成协议 v1](docs/integration-v1.md)
 
 ## 验证边界
 

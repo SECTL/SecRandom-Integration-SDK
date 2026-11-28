@@ -52,17 +52,6 @@ jobs:
         run: cargo test --manifest-path bindings/rust/secrandom-integration/Cargo.toml
       - name: Compile C++ adapter
         run: g++ -std=c++17 -Wall -Wextra -Werror -I bindings/cpp/include bindings/cpp/tests/compile.cpp -o /tmp/secrandom-integration-cpp-smoke
-      - name: Pack SDK packages
-        run: |
-          version=$(dotnet msbuild src/SecRandom.Integration.Client/SecRandom.Integration.Client.csproj -getProperty:Version)
-          if [[ "$GITHUB_REF" == refs/tags/v* && "${GITHUB_REF_NAME#v}" != "$version" ]]; then
-            echo "Tag $GITHUB_REF_NAME does not match package version $version" >&2
-            exit 1
-          fi
-          mkdir -p artifacts/packages
-          dotnet pack src/SecRandom.Integration.Abstractions/SecRandom.Integration.Abstractions.csproj -c Release --no-build -o artifacts/packages
-          dotnet pack src/SecRandom.DrawKit/SecRandom.DrawKit.csproj -c Release --no-build -o artifacts/packages
-          dotnet pack src/SecRandom.Integration.Client/SecRandom.Integration.Client.csproj -c Release --no-build -o artifacts/packages
       - name: Sign the official SDK assembly
         if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
         env:
@@ -73,6 +62,20 @@ jobs:
           dotnet run --project tools/SecRandom.Integration.Signing/SecRandom.Integration.Signing.csproj -c Release --no-build -- \
             src/SecRandom.Integration.Client/bin/Release/net8.0/SecRandom.Integration.Client.dll \
             artifacts/SecRandom.Integration.Client.official-proof.json
+      - name: Pack SDK packages
+        run: |
+          version=$(dotnet msbuild src/SecRandom.Integration.Client/SecRandom.Integration.Client.csproj -getProperty:Version)
+          if [[ "$GITHUB_REF" == refs/tags/v* && "${GITHUB_REF_NAME#v}" != "$version" ]]; then
+            echo "Tag $GITHUB_REF_NAME does not match package version $version" >&2
+            exit 1
+          fi
+          mkdir -p artifacts/packages
+          dotnet pack src/SecRandom.Integration.Abstractions/SecRandom.Integration.Abstractions.csproj -c Release --no-build -o artifacts/packages
+          dotnet pack src/SecRandom.DrawKit/SecRandom.DrawKit.csproj -c Release --no-build -o artifacts/packages
+          dotnet pack src/SecRandom.Integration.Client/SecRandom.Integration.Client.csproj -c Release --no-build -o artifacts/packages -p:OfficialProofPath="$GITHUB_WORKSPACE/artifacts/SecRandom.Integration.Client.official-proof.json"
+      - name: Assemble release package
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
+        run: |
           mkdir -p artifacts/release-package
           cp artifacts/packages/*.nupkg artifacts/SecRandom.Integration.Client.official-proof.json artifacts/release-package/
           rsync -a --exclude target --exclude __pycache__ --exclude '*.pyc' bindings artifacts/release-package/
@@ -87,7 +90,7 @@ jobs:
             exit 1
           fi
           dotnet restore samples/PackageSmoke/PackageSmoke.csproj -p:RestoreAdditionalProjectSources="$RUNNER_TEMP/sdk-release" --packages "$RUNNER_TEMP/sdk-packages"
-          dotnet run --project samples/PackageSmoke/PackageSmoke.csproj -c Release --no-restore -- "$RUNNER_TEMP/sdk-release/SecRandom.Integration.Client.official-proof.json"
+          dotnet run --project samples/PackageSmoke/PackageSmoke.csproj -c Release --no-restore
       - uses: actions/upload-artifact@v4
         if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
         with:
@@ -107,6 +110,16 @@ jobs:
         with:
           name: SecRandom-Integration-SDK
           path: artifacts
+      - name: Publish packages to NuGet.org
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: |
+          test -n "$NUGET_API_KEY" || { echo "NUGET_API_KEY is not configured" >&2; exit 1; }
+          unzip -q artifacts/SecRandom-Integration-SDK.zip -d "$RUNNER_TEMP/sdk-release"
+          version="${GITHUB_REF_NAME#v}"
+          for package in SecRandom.Integration.Abstractions SecRandom.Integration.Client SecRandom.DrawKit; do
+            dotnet nuget push "$RUNNER_TEMP/sdk-release/$package.$version.nupkg" --api-key "$NUGET_API_KEY" --source https://api.nuget.org/v3/index.json
+          done
       - uses: softprops/action-gh-release@v2
         with:
           name: SecRandom 集成 SDK ${{ github.ref_name }}

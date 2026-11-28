@@ -5,11 +5,12 @@ using SecRandom.Integration;
 using SecRandom.Integration.Client;
 using SecRandom.DrawKit;
 
-if (args.Length != 1) throw new ArgumentException("Expected the official proof path.");
+if (args.Length != 0) throw new ArgumentException("No arguments expected.");
 var assembly = typeof(AutomationClient).Assembly;
 var key = assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
     .First(attribute => attribute.Key == "SecRandomIntegrationPublicKey").Value;
-var proof = JsonSerializer.Deserialize<OfficialSdkProof>(File.ReadAllText(args[0]), IntegrationJson.Options)
+var proofPath = Path.Combine(AppContext.BaseDirectory, "SecRandom.Integration.Client.official-proof.json");
+var proof = JsonSerializer.Deserialize<OfficialSdkProof>(File.ReadAllText(proofPath), IntegrationJson.Options)
     ?? throw new InvalidDataException("Invalid proof.");
 var hash = Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(assembly.Location))).ToLowerInvariant();
 if (!OfficialSignature.Verify(proof, key) || proof.AssemblySha256 != hash
