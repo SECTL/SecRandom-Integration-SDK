@@ -58,7 +58,7 @@ public sealed class AutomationTransportTests
     [Fact]
     public async Task Events_SubscribeAndReceiveOnLongLivedPipe()
     {
-        var name = "sr-event-test-" + Guid.NewGuid().ToString("N");
+        var name = "sr-" + Guid.NewGuid().ToString("N");
         using var server = new NamedPipeServerStream(name, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
         await using var events = new AutomationEvents(name).SubscribeAsync(["draw.completed"], timeout.Token).GetAsyncEnumerator(timeout.Token);
@@ -80,7 +80,7 @@ public sealed class AutomationTransportTests
     [Fact]
     public async Task Events_ExposesDisabledErrorFromServer()
     {
-        var name = "sr-event-test-" + Guid.NewGuid().ToString("N");
+        var name = "sr-" + Guid.NewGuid().ToString("N");
         using var server = new NamedPipeServerStream(name, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
         await using var events = new AutomationEvents(name).SubscribeAsync(cancellationToken: timeout.Token).GetAsyncEnumerator(timeout.Token);
@@ -97,7 +97,7 @@ public sealed class AutomationTransportTests
     [Fact]
     public async Task LegacyCall_ReturnsBusinessErrorWithoutTreatingItAsTransportSuccess()
     {
-        var name = "sr-legacy-test-" + Guid.NewGuid().ToString("N");
+        var name = "sr-" + Guid.NewGuid().ToString("N");
         using var server = new NamedPipeServerStream(name, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
         var call = new AutomationClient(name).CallLegacyAsync("data/roll_call_list?name=A", timeout.Token);
@@ -111,5 +111,14 @@ public sealed class AutomationTransportTests
         var response = await call;
         Assert.True(response.GetProperty("success").GetBoolean());
         Assert.Equal("error", response.GetProperty("result").GetProperty("status").GetString());
+    }
+
+    [Fact]
+    public async Task NotificationReceiver_PipeCanBeCreated()
+    {
+        await using var receiver = new NotificationReceiver(new("test.app", "Test", "1.2.0.0", "unused"));
+        using var server = new NamedPipeServerStream(receiver.PipeName, PipeDirection.InOut, 1,
+            PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
+        Assert.StartsWith("SecRandom_Integration_", receiver.PipeName);
     }
 }

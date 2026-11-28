@@ -30,7 +30,7 @@ public sealed class NotificationReceiver : IAsyncDisposable
             throw new ArgumentException("The integration app id and display name are required.", nameof(options));
         _discovery = new IntegrationDiscovery(options.DiscoveryDirectory);
         PipeName = "SecRandom_Integration_" + Convert.ToHexString(
-            System.Security.Cryptography.SHA256.HashData(Encoding.UTF8.GetBytes(options.AppId + Guid.NewGuid().ToString("N"))))[..32];
+            System.Security.Cryptography.SHA256.HashData(Encoding.UTF8.GetBytes(options.AppId + Guid.NewGuid().ToString("N"))))[..16];
     }
 
     public string PipeName { get; }
