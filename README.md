@@ -75,16 +75,15 @@ SecRandom 集成 SDK 面向希望在自己的应用中使用名单和抽取能�
 
 ## 下载与更新
 
-完整的安装、调用、事件和常见问题请参阅 [集成 SDK 文档](https://secrandom.sectl.cn/dev/integration/)。当前源码中的 1.2 便捷 API 尚未随 1.1.0 发行包提供；使用前请确认相应版本已经发布。
+完整的安装、调用、事件和常见问题请参阅 [集成 SDK 文档](https://secrandom.sectl.cn/dev/integration/)。
 
-从 [GitHub Releases](https://github.com/SECTL/SecRandom-Integration-SDK/releases) 下载发行包并解压，包内包含三个 `.nupkg`、官方 proof，以及 `bindings/` 下的 C++、Python、Rust 适配器。将解压目录作为本地 NuGet 源，按需添加 `SecRandom.DrawKit` 或 `SecRandom.Integration.Client`；其依赖的 `SecRandom.Integration.Abstractions` 也需要保留在该源中
+从 NuGet.org 按需安装 C# 包；其公共契约依赖会自动还原。[GitHub Releases](https://github.com/SECTL/SecRandom-Integration-SDK/releases) 还提供 `.nupkg`、官方 proof 以及 `bindings/` 下的 C++、Python、Rust 适配器。
 
-例如，解压到 `D:\packages\secrandom` 后，在目标项目目录执行：
+在目标项目目录执行：
 
 ```powershell
-dotnet nuget add source D:\packages\secrandom --name SecRandomLocal
-dotnet add package SecRandom.DrawKit --version 1.1.0
-dotnet add package SecRandom.Integration.Client --version 1.1.0
+dotnet add package SecRandom.DrawKit --version 1.2.0
+dotnet add package SecRandom.Integration.Client --version 1.2.0
 ```
 
 ### 通过软件默认设置抽取
@@ -126,7 +125,7 @@ Console.WriteLine(result.Members[0].Name);
 
 `IntegrationDrawService.Draw` 在成功抽取后写入历史。SDK 的名单和历史存储由接入应用管理，不会自动读取或修改 SecRandom 本体的数据
 
-1.2 开发版提供事务式本地数据库：
+1.2 提供事务式本地数据库：
 
 ```csharp
 var local = new LocalDrawStore("data/draw.sqlite");
@@ -147,8 +146,8 @@ using SecRandom.Integration.Client;
 await using var receiver = new NotificationReceiver(new NotificationReceiverOptions(
     AppId: "example.classroom.app",
     DisplayName: "课堂应用",
-    SdkVersion: "1.1.0.0",
-    PublisherProofPath: "SecRandom.Integration.Client.official-proof.json"));
+    SdkVersion: "1.2.0.0",
+    PublisherProofPath: Path.Combine(AppContext.BaseDirectory, "SecRandom.Integration.Client.official-proof.json")));
 
 receiver.NotificationReceived += (result, cancellationToken) =>
 {
